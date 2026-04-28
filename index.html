@@ -474,7 +474,7 @@ footer{
       <div class="hero-photo-frame" id="hero-photo-frame">
         <div class="hero-photo-placeholder" id="hero-photo-placeholder">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          <span>Rajani Manandhar</span>
+          <span>Your Photo Here</span>
         </div>
       </div>
     </div>
@@ -520,16 +520,16 @@ footer{
         <p class="skill-cat">Project Management</p>
         <ul class="skill-list">
           <li>Agile &amp; Scrum</li>
-          <li>Clickup</li>
           <li>SDLC</li>
           <li>Risk &amp; Issue Tracking</li>
-          <li>Karyabase</li>
+          <li>Trello</li>
         </ul>
       </div>
       <div class="skill-card reveal">
         <p class="skill-cat">Cloud &amp; Infrastructure</p>
         <ul class="skill-list">
           <li>AWS EC2</li>
+          <li>Docker</li>
           <li>Linux (Ubuntu, Amazon Linux)</li>
           <li>Windows Server</li>
         </ul>
@@ -549,6 +549,7 @@ footer{
           <li>Jupyter Notebook</li>
           <li>Git &amp; GitHub</li>
           <li>Unity</li>
+          <li>MAUI Blazor</li>
         </ul>
       </div>
     </div>
@@ -872,59 +873,39 @@ footer{
 </div>
 
 <div class="save-toast" id="save-toast">Changes Published ✓</div>
+<div id="fb-status" style="position:fixed;bottom:1rem;left:1rem;font-size:0.72rem;letter-spacing:0.1em;padding:0.4rem 0.8rem;background:rgba(255,255,255,0.9);border:1px solid var(--border);color:var(--muted);z-index:50;display:none;"></div>
 
-<script>
-// ======= INDEXEDDB FOR PHOTO =======
-let photoDB = null;
-function openPhotoDB(){
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open('portfolio_photo', 1);
-    req.onupgradeneeded = e => e.target.result.createObjectStore('photos');
-    req.onsuccess = e => { photoDB = e.target.result; resolve(); };
-    req.onerror = () => reject();
-  });
-}
-function savePhotoToDB(base64){
-  return new Promise((resolve, reject) => {
-    const tx = photoDB.transaction('photos','readwrite');
-    tx.objectStore('photos').put(base64, 'profile');
-    tx.oncomplete = resolve;
-    tx.onerror = reject;
-  });
-}
-function getPhotoFromDB(){
-  return new Promise((resolve) => {
-    if(!photoDB){ resolve(''); return; }
-    const tx = photoDB.transaction('photos','readonly');
-    const req = tx.objectStore('photos').get('profile');
-    req.onsuccess = () => resolve(req.result || '');
-    req.onerror = () => resolve('');
-  });
-}
-function deletePhotoFromDB(){
-  return new Promise((resolve) => {
-    if(!photoDB){ resolve(); return; }
-    const tx = photoDB.transaction('photos','readwrite');
-    tx.objectStore('photos').delete('profile');
-    tx.oncomplete = resolve;
-    tx.onerror = resolve;
-  });
-}
+<!-- Firebase SDKs -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ======= DATA =======
+// ======= FIREBASE CONFIG =======
+const firebaseConfig = {
+  apiKey: "AIzaSyAQiWp6TJKQnY7m0UmL48NO17TVUcFm7J0",
+  authDomain: "rajani-portfolio.firebaseapp.com",
+  projectId: "rajani-portfolio",
+  storageBucket: "rajani-portfolio.firebasestorage.app",
+  messagingSenderId: "662516802980",
+  appId: "1:662516802980:web:ce73e12841917db5414d31"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ======= DEFAULT DATA =======
 const DEFAULT_DATA = {
   eyebrow:'Project Manager · Pokhara, Nepal',
   fname:'Rajani', lname:'Manandhar',
   company:'Skybase Innovations Pvt Ltd',
   herodesc:'BSc (Hons) Computing graduate with expertise in Agile, SDLC, and cross-functional project leadership. Bridging technology and strategy to deliver meaningful outcomes.',
-  photo:'',
+  photoURL:'',
   about:"I have completed my BSc (Hons) in Computing from Informatics College Pokhara, affiliated with London Metropolitan University. Currently contributing as a Project Manager at Skybase Innovations Pvt Ltd.|I'm capable of project planning, coordination, and reporting, with a strong foundation in Agile and SDLC methodologies. I bring technical depth alongside leadership and organizational clarity to every project I lead.|My background spans cloud infrastructure, software development, and data science — allowing me to communicate effectively across engineering and business domains.",
   stat1n:'2025', stat1l:'BSc Computing Graduate',
   stat2n:'4+',   stat2l:'Projects Delivered',
   stat3n:'3',    stat3l:'AWS & Cloud Certifications',
   email:'rajani.mdhr60@gmail.com', phone:'+977 9863799428', location:'Pokhara, Nepal',
   skills:[
-    {cat:'Project Management',   items:['Agile & Scrum','SDLC','Risk & Issue Tracking','Karyabase']},
+    {cat:'Project Management',    items:['Agile & Scrum','SDLC','Risk & Issue Tracking','Trello']},
     {cat:'Cloud & Infrastructure',items:['AWS EC2','Docker','Linux (Ubuntu, Amazon Linux)','Windows Server']},
     {cat:'Programming',           items:['Python','C#','SQL','Bash']},
     {cat:'Tools & Frameworks',    items:['Jupyter Notebook','Git & GitHub','Unity','MAUI Blazor']},
@@ -938,9 +919,9 @@ const DEFAULT_DATA = {
      tags:'AWS,Docker,PostgreSQL,Apache Airflow'},
   ],
   projects:[
-    {num:'01', name:'SitList — Web & Mobile App', desc:'Referral-based babysitting and pet-sitting platform connecting families with trusted caregivers from their own network. Led end-to-end project coordination, sprint planning, stakeholder reporting, and delivery management across web and mobile (iOS/Android).', tags:'Project Management,Agile,Web,Mobile', link:'https://sit-list.com/'},
-    {num:'02', name:'Tripharu — Travel App',      desc:'Mobile travel application for iOS and Android helping users discover and plan trips in Nepal. Managed feature roadmaps, coordinated the development team, tracked milestones, and ensured timely delivery of releases on both platforms.', tags:'Project Management,Mobile,iOS,Android,Travel', link:'https://play.google.com/store/apps/details?id=com.tripharu.android'},
-    {num:'03', name:'HelloMaya — Dating App',     desc:'Nepali community dating app available on iOS and Android, connecting Nepalis worldwide in a respectful and safe space. Oversaw project timelines, cross-functional team coordination, release planning, and quality assurance workflows.', tags:'Project Management,Mobile,iOS,Android', link:'https://hellomaya-hm.com/'},
+    {num:'01', name:'SitList — Web & Mobile App', desc:'Referral-based babysitting and pet-sitting platform connecting families with trusted caregivers. Led end-to-end project coordination, sprint planning, stakeholder reporting, and delivery management across web and mobile (iOS/Android).', tags:'Project Management,Agile,Web,Mobile', link:'https://sit-list.com/'},
+    {num:'02', name:'Tripharu — Travel App',      desc:'Mobile travel application for iOS and Android helping users discover and plan trips in Nepal. Managed feature roadmaps, coordinated the development team, tracked milestones, and ensured timely delivery on both platforms.', tags:'Project Management,Mobile,iOS,Android,Travel', link:'https://play.google.com/store/apps/details?id=com.tripharu.android'},
+    {num:'03', name:'HelloMaya — Dating App',     desc:'Nepali community dating app on iOS & Android, connecting Nepalis worldwide in a respectful space. Oversaw project timelines, cross-functional team coordination, release planning, and QA workflows.', tags:'Project Management,Mobile,iOS,Android', link:'https://hellomaya-hm.com/'},
     {num:'04', name:'Race Rush — Unity 3D',       desc:'3D car racing game with bot AI using waypoints and braking points. Designed full UI including track & car selection. Managed milestones end-to-end.', tags:'C#,Unity,Game Dev', link:''},
   ],
   certs:[
@@ -952,12 +933,50 @@ const DEFAULT_DATA = {
   password:'rajani2025'
 };
 
-let data = JSON.parse(localStorage.getItem('portfolio_data') || JSON.stringify(DEFAULT_DATA));
-// photo is stored in IndexedDB, not in data object
-if('photo' in data){ delete data.photo; }
+let data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+let currentPhotoURL = '';
 
-// current photo held in memory only
-let currentPhoto = '';
+// ======= STATUS BAR =======
+function showStatus(msg, color='var(--muted)'){
+  const el = document.getElementById('fb-status');
+  el.textContent = msg; el.style.color = color; el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.style.display='none', 4000);
+}
+
+// ======= FIREBASE: LOAD DATA =======
+async function loadFromFirebase(){
+  showStatus('Loading content…');
+  try {
+    const snap = await getDoc(doc(db, 'portfolio', 'content'));
+    if(snap.exists()){
+      const saved = snap.data();
+      data = Object.assign({}, DEFAULT_DATA, saved);
+      currentPhotoURL = data.photoURL || '';
+    }
+    showStatus('✓ Content loaded', '#7a7570');
+  } catch(e){
+    showStatus('⚠ Offline — showing defaults', '#b5a48a');
+    console.warn('Firebase load failed:', e);
+  }
+  renderPortfolio();
+  observeReveal();
+  checkHashForAdmin();
+}
+
+// ======= FIREBASE: SAVE DATA =======
+async function saveToFirebase(){
+  showStatus('Saving…');
+  try {
+    await setDoc(doc(db, 'portfolio', 'content'), data);
+    showStatus('✓ Published — live on all devices!', '#7a7570');
+    return true;
+  } catch(e){
+    showStatus('✗ Save failed: ' + e.message, '#cc3333');
+    console.error('Firebase save failed:', e);
+    return false;
+  }
+}
 
 // ======= RENDER =======
 function renderPortfolio(){
@@ -965,6 +984,7 @@ function renderPortfolio(){
   document.querySelector('.hero-name').innerHTML = data.fname + '<br><em>' + data.lname + '</em>';
   document.getElementById('d-company').textContent = data.company;
   document.getElementById('d-herodesc').textContent = data.herodesc;
+  currentPhotoURL = data.photoURL || '';
   renderHeroPhoto();
   document.getElementById('d-about').innerHTML = data.about.split('|').map(p=>`<p>${p}</p>`).join('');
   document.getElementById('d-stat1n').textContent = data.stat1n;
@@ -1018,41 +1038,63 @@ function renderPortfolio(){
 function renderHeroPhoto(){
   const frame = document.getElementById('hero-photo-frame');
   if(!frame) return;
-  if(currentPhoto){
-    frame.innerHTML = `<img src="${currentPhoto}" alt="Rajani Manandhar">`;
+  if(currentPhotoURL){
+    frame.innerHTML = `<img src="${currentPhotoURL}" alt="Rajani Manandhar">`;
   } else {
     frame.innerHTML = `<div class="hero-photo-placeholder">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
         <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-      </svg>
-      <span>Rajani Manandhar</span>
+      </svg><span>Your Photo Here</span>
     </div>`;
   }
 }
 
-// ======= PHOTO UPLOAD =======
+// ======= CLOUDINARY PHOTO UPLOAD =======
+const CLOUDINARY_CLOUD = 'dhcvmsflm';
+const CLOUDINARY_PRESET = 'portfolio_update';
+
 function handlePhotoUpload(input){
   const file = input.files[0];
   if(!file) return;
-  const reader = new FileReader();
-  reader.onload = async e => {
-    currentPhoto = e.target.result;
-    try { await savePhotoToDB(currentPhoto); } catch(err){ console.warn('Photo DB save failed', err); }
-    renderHeroPhoto();
-    const prev = document.getElementById('admin-photo-preview');
-    if(prev) prev.innerHTML = `<img src="${currentPhoto}" style="width:100%;height:100%;object-fit:cover;object-position:top center;">`;
-  };
-  reader.readAsDataURL(file);
-}
-async function removePhoto(){
-  currentPhoto = '';
-  try { await deletePhotoFromDB(); } catch(e){}
-  renderHeroPhoto();
-  const prev = document.getElementById('admin-photo-preview');
-  if(prev){ prev.innerHTML='No photo'; prev.style.cssText += 'font-size:0.7rem;color:var(--muted);display:flex;align-items:center;justify-content:center;'; }
+  showStatus('Uploading photo…');
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_PRESET);
+  formData.append('folder', 'portfolio');
+
+  fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
+    method: 'POST',
+    body: formData
+  })
+  .then(r => r.json())
+  .then(async result => {
+    if(result.secure_url){
+      currentPhotoURL = result.secure_url;
+      data.photoURL = result.secure_url;
+      renderHeroPhoto();
+      const prev = document.getElementById('admin-photo-preview');
+      if(prev) prev.innerHTML = `<img src="${currentPhotoURL}" style="width:100%;height:100%;object-fit:cover;object-position:top center;">`;
+      showStatus('✓ Photo uploaded!', '#7a7570');
+      // Auto-save photoURL to Firebase
+      await saveToFirebase();
+    } else {
+      showStatus('✗ Upload failed: ' + (result.error?.message || 'Unknown error'), '#cc3333');
+    }
+  })
+  .catch(e => showStatus('✗ Upload error: ' + e.message, '#cc3333'));
 }
 
-// ======= ADMIN ACCESS VIA /#admin =======
+async function removePhoto(){
+  currentPhotoURL = '';
+  data.photoURL = '';
+  renderHeroPhoto();
+  const prev = document.getElementById('admin-photo-preview');
+  if(prev) prev.innerHTML = 'No photo';
+  await saveToFirebase();
+  showStatus('✓ Photo removed', '#7a7570');
+}
+
+// ======= ADMIN ACCESS =======
 function checkHashForAdmin(){
   if(window.location.hash === '#admin') openAdminLogin();
 }
@@ -1075,19 +1117,22 @@ function tryLogin(){
     document.getElementById('login-error').style.display = 'block';
   }
 }
+window.tryLogin = tryLogin;
+window.closeAdminLogin = closeAdminLogin;
+
 function openAdmin(){
   document.getElementById('admin-panel').classList.add('open');
   loadAdminFields();
 }
-function closeAdmin(){
-  document.getElementById('admin-panel').classList.remove('open');
-}
+window.closeAdmin = () => document.getElementById('admin-panel').classList.remove('open');
+
 function switchTab(tab){
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.admin-nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   event.target.classList.add('active');
 }
+window.switchTab = switchTab;
 
 function loadAdminFields(){
   document.getElementById('f-eyebrow').value  = data.eyebrow;
@@ -1107,8 +1152,8 @@ function loadAdminFields(){
   document.getElementById('f-location').value = data.location;
   const prev = document.getElementById('admin-photo-preview');
   if(prev){
-    if(currentPhoto) prev.innerHTML = `<img src="${currentPhoto}" style="width:100%;height:100%;object-fit:cover;object-position:top center;">`;
-    else { prev.innerHTML='No photo'; }
+    if(currentPhotoURL) prev.innerHTML = `<img src="${currentPhotoURL}" style="width:100%;height:100%;object-fit:cover;object-position:top center;">`;
+    else prev.innerHTML = 'No photo';
   }
   renderSkillsAdmin(); renderExpAdmin(); renderProjAdmin(); renderCertsAdmin();
 }
@@ -1122,11 +1167,11 @@ function renderSkillsAdmin(){
       <div class="field-group"><label class="field-label">Items (one per line)</label><textarea class="field-textarea" id="sk-items-${i}" style="min-height:80px">${s.items.join('\n')}</textarea></div>
     </div>`).join('');
 }
-function addSkillCard(){ data.skills.push({cat:'New Category',items:['Item 1','Item 2']}); renderSkillsAdmin(); }
-function deleteSkill(i){ data.skills.splice(i,1); renderSkillsAdmin(); }
+window.addSkillCard = () => { data.skills.push({cat:'New Category',items:['Item 1']}); renderSkillsAdmin(); };
+window.deleteSkill  = i => { data.skills.splice(i,1); renderSkillsAdmin(); };
 function collectSkills(){
   data.skills = data.skills.map((_,i)=>({
-    cat:   document.getElementById('sk-cat-'+i).value,
+    cat: document.getElementById('sk-cat-'+i).value,
     items: document.getElementById('sk-items-'+i).value.split('\n').filter(Boolean)
   }));
 }
@@ -1145,8 +1190,8 @@ function renderExpAdmin(){
       <div class="field-group"><label class="field-label">Tags (comma-separated)</label><input class="field-input" id="ex-tags-${i}" value="${e.tags}"></div>
     </div>`).join('');
 }
-function addExpItem(){ data.experience.unshift({period:'',company:'',role:'New Role',desc:'',tags:''}); renderExpAdmin(); }
-function deleteExp(i){ data.experience.splice(i,1); renderExpAdmin(); }
+window.addExpItem = () => { data.experience.unshift({period:'',company:'',role:'New Role',desc:'',tags:''}); renderExpAdmin(); };
+window.deleteExp  = i => { data.experience.splice(i,1); renderExpAdmin(); };
 function collectExp(){
   data.experience = data.experience.map((_,i)=>({
     period:  document.getElementById('ex-period-'+i).value,
@@ -1171,8 +1216,8 @@ function renderProjAdmin(){
       <div class="field-group"><label class="field-label">Live URL (optional)</label><input class="field-input" id="pj-link-${i}" value="${p.link||''}" placeholder="https://..."></div>
     </div>`).join('');
 }
-function addProject(){ data.projects.push({num:'0'+(data.projects.length+1),name:'New Project',desc:'',tags:'',link:''}); renderProjAdmin(); }
-function deleteProj(i){ data.projects.splice(i,1); renderProjAdmin(); }
+window.addProject = () => { data.projects.push({num:'0'+(data.projects.length+1),name:'New Project',desc:'',tags:'',link:''}); renderProjAdmin(); };
+window.deleteProj = i => { data.projects.splice(i,1); renderProjAdmin(); };
 function collectProj(){
   data.projects = data.projects.map((_,i)=>({
     num:  document.getElementById('pj-num-'+i).value,
@@ -1194,8 +1239,8 @@ function renderCertsAdmin(){
       </div>
     </div>`).join('');
 }
-function addCert(){ data.certs.push({icon:'🏆',name:'New Certification'}); renderCertsAdmin(); }
-function deleteCert(i){ data.certs.splice(i,1); renderCertsAdmin(); }
+window.addCert    = () => { data.certs.push({icon:'🏆',name:'New Certification'}); renderCertsAdmin(); };
+window.deleteCert = i => { data.certs.splice(i,1); renderCertsAdmin(); };
 function collectCerts(){
   data.certs = data.certs.map((_,i)=>({
     icon: document.getElementById('ct-icon-'+i).value,
@@ -1203,8 +1248,8 @@ function collectCerts(){
   }));
 }
 
-// --- SAVE ---
-function saveAndApply(){
+// --- SAVE & PUBLISH ---
+window.saveAndApply = async () => {
   data.eyebrow  = document.getElementById('f-eyebrow').value;
   data.fname    = document.getElementById('f-fname').value;
   data.lname    = document.getElementById('f-lname').value;
@@ -1221,18 +1266,17 @@ function saveAndApply(){
   data.phone    = document.getElementById('f-phone').value;
   data.location = document.getElementById('f-location').value;
   collectSkills(); collectExp(); collectProj(); collectCerts();
-  // Save everything except photo (photo lives in IndexedDB)
-  const toSave = Object.assign({}, data);
-  delete toSave.photo;
-  localStorage.setItem('portfolio_data', JSON.stringify(toSave));
-  renderPortfolio();
-  const t = document.getElementById('save-toast');
-  t.style.display = 'block';
-  setTimeout(()=>t.style.display='none', 2500);
-}
+  const ok = await saveToFirebase();
+  if(ok){
+    renderPortfolio();
+    const t = document.getElementById('save-toast');
+    t.style.display = 'block';
+    setTimeout(()=>t.style.display='none', 2500);
+  }
+};
 
 // --- CHANGE PASSWORD ---
-function changePassword(){
+window.changePassword = async () => {
   const old = document.getElementById('f-oldpass').value;
   const nw  = document.getElementById('f-newpass').value;
   const cf  = document.getElementById('f-confirmpass').value;
@@ -1241,12 +1285,32 @@ function changePassword(){
   if(nw !== cf)             { msg.style.color='#cc3333'; msg.textContent='New passwords do not match.'; return; }
   if(nw.length < 6)         { msg.style.color='#cc3333'; msg.textContent='Password must be at least 6 characters.'; return; }
   data.password = nw;
-  localStorage.setItem('portfolio_data', JSON.stringify(data));
-  msg.style.color = '#7a7570'; msg.textContent = 'Password updated successfully!';
+  const ok = await saveToFirebase();
+  if(ok){ msg.style.color='#7a7570'; msg.textContent='✓ Password updated and saved to Firebase.'; }
   document.getElementById('f-oldpass').value = '';
   document.getElementById('f-newpass').value = '';
   document.getElementById('f-confirmpass').value = '';
-}
+};
+
+// --- BACKUP (still useful for local export) ---
+window.exportData = () => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'rajani-portfolio-backup.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(a.href);
+};
+window.resetData = async () => {
+  if(!confirm('Reset all content to defaults? This cannot be undone.')) return;
+  data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  currentPhotoURL = '';
+  await saveToFirebase();
+  renderPortfolio(); loadAdminFields();
+  document.getElementById('backup-msg').textContent = '✓ Reset and published.';
+};
+window.handlePhotoUpload = handlePhotoUpload;
+window.removePhoto = removePhoto;
 
 // ======= SCROLL REVEAL =======
 function observeReveal(){
@@ -1256,95 +1320,8 @@ function observeReveal(){
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 }
 
-// --- EXPORT / IMPORT / RESET ---
-async function exportData(){
-  // Include photo in export as a separate key so backup is complete
-  const exportObj = Object.assign({}, data, { photo: currentPhoto });
-  const json = JSON.stringify(exportObj, null, 2);
-  const blob = new Blob([json], {type:'application/json;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'rajani-portfolio-backup.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
-}
-function importData(input){
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = async e => {
-    const msg = document.getElementById('backup-msg');
-    try {
-      let raw = e.target.result;
-      if(raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
-      raw = raw.trim();
-      const imported = JSON.parse(raw);
-      if(typeof imported !== 'object' || !imported.fname) throw new Error('Not a valid portfolio backup');
-
-      // Split photo out before saving to localStorage
-      const photo = imported.photo || '';
-      delete imported.photo;
-
-      data = Object.assign({}, DEFAULT_DATA, imported);
-      delete data.photo;
-
-      // Save text data to localStorage (no photo = no quota issue)
-      localStorage.setItem('portfolio_data', JSON.stringify(data));
-
-      // Save photo to IndexedDB separately
-      if(photo){
-        currentPhoto = photo;
-        try { await savePhotoToDB(photo); } catch(err){ console.warn('Photo restore failed', err); }
-      } else {
-        currentPhoto = '';
-        try { await deletePhotoFromDB(); } catch(e){}
-      }
-
-      renderPortfolio();
-      loadAdminFields();
-      msg.style.color = '#7a7570';
-      msg.textContent = '✓ Content restored successfully! All sections updated.';
-    } catch(err) {
-      msg.style.color = '#cc3333';
-      msg.textContent = '✗ Could not restore: ' + err.message;
-      console.error('Import error:', err);
-    }
-  };
-  reader.onerror = () => {
-    document.getElementById('backup-msg').textContent = '✗ Could not read the file. Please try again.';
-  };
-  reader.readAsText(file, 'UTF-8');
-  input.value = '';
-}
-async function resetData(){
-  if(!confirm('Reset all content to defaults? This cannot be undone.')) return;
-  data = JSON.parse(JSON.stringify(DEFAULT_DATA));
-  delete data.photo;
-  currentPhoto = '';
-  const toSave = Object.assign({}, data);
-  localStorage.setItem('portfolio_data', JSON.stringify(toSave));
-  try { await deletePhotoFromDB(); } catch(e){}
-  renderPortfolio();
-  loadAdminFields();
-  const msg = document.getElementById('backup-msg');
-  msg.style.color = '#7a7570';
-  msg.textContent = '✓ Content reset to defaults.';
-}
-
 // ======= INIT =======
-openPhotoDB().then(async () => {
-  currentPhoto = await getPhotoFromDB();
-  renderPortfolio();
-  observeReveal();
-  checkHashForAdmin();
-}).catch(() => {
-  // IndexedDB unavailable, fall back gracefully
-  renderPortfolio();
-  observeReveal();
-  checkHashForAdmin();
-});
+loadFromFirebase();
 </script>
 </body>
 </html>
